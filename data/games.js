@@ -72,8 +72,8 @@ const createGame = async (
     win,
   };
 
-  teamObj.games.push(newGame)
-  teamObj.winLossCount = updateRecord(teamObj.winLossCount, newGame.win)
+  teamObj.games.push(newGame);
+  teamObj.winLossCount = updateRecord(teamObj.winLossCount, newGame.win);
 
   const teamsCollection = await teams();
   const updateInfo = await teamsCollection.findOneAndReplace(
@@ -87,12 +87,48 @@ const createGame = async (
   return updateInfo;
 };
 
-const getAllGames = async (teamId) => {};
+const getAllGames = async (teamId) => {
+  if (isInvalidObjectID(teamId))
+    throw "teamId must be a string of least one non-space character and a valid object ID.";
 
-const getGame = async (gameId) => {};
+  const { games } = await getTeamById(teamId);
+  return games;
+};
+
+const getGame = async (gameId) => {
+  if (isInvalidObjectID(gameId))
+    throw "teamId must be a string of least one non-space character and a valid object ID.";
+
+  const teamsCollection = await teams();
+  const foundGame = await teamsCollection.findOne(
+    { "games._id": ObjectId.createFromHexString(gameId) },
+    { projection: { _id: 0, "games.$": 1 } }
+  );
+
+  if (!foundGame) throw "Game not found.";
+
+  return foundGame.games[0];
+};
 
 const updateGame = async (gameId, updateObject) => {};
 
-const removeGame = async (gameId) => {};
+const removeGame = async (gameId) => {
+  if (isInvalidObjectID(gameId))
+    throw "teamId must be a string of least one non-space character and a valid object ID.";
 
-export  { createGame, getAllGames, getGame, updateGame, removeGame }
+  const teamsCollection = await teams();
+  const team = await teamsCollection.findOne({
+    "games._id": ObjectId.createFromHexString(gameId),
+  });
+  // not done
+  const foundGame = await teamsCollection.updateOne(
+    { _id: team._id },
+    { $pull: { reviews: { _id: ObjectId.createFromHexString(gameId) } } }
+  );
+
+  if (!foundGame) throw "Game not found.";
+
+  return await this.getMovie(id);
+};
+
+export { createGame, getAllGames, getGame, updateGame, removeGame };
