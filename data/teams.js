@@ -82,7 +82,7 @@ const createTeam = async (
 
   const newId = insertInfo.insertedId.toString();
 
-  return getTeamById(newId);
+  return await getTeamById(newId);
 };
 
 const getAllTeams = async () => {
@@ -191,7 +191,7 @@ const updateTeam = async (
   }
 
   id = id.trim();
-  const { winLossCount, games } = getTeamById(id);
+  const { winLossCount, games } = await getTeamById(id);
 
   const updatedTeam = {
     name: name.trim(),
@@ -209,7 +209,7 @@ const updateTeam = async (
   const teamsCollection = await teams();
   const updateInfo = await teamsCollection.findOneAndReplace(
     { _id: ObjectId.createFromHexString(id) },
-    updatedPostData,
+    updatedTeam,
     { returnDocument: "after" }
   );
 
