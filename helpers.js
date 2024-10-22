@@ -59,15 +59,15 @@ const US_STATE_CODES = [
 ];
 
 const isInvalidString = (str) => {
-  return !(typeof str === "string" && str.trim() !== 0);
+  return typeof str !== "string" || str.trim() === 0;
 };
 
 const isInvalidInteger = (num) => {
-  return !(
-    typeof num === "number" &&
-    !isNaN(num) &&
-    isFinite(num) &&
-    Number.isInteger(num)
+  return (
+    typeof num !== "number" ||
+    isNaN(num) ||
+    !isFinite(num) ||
+    !Number.isInteger(num)
   );
 };
 
@@ -76,11 +76,11 @@ const isInvalidBoolean = (bool) => {
 };
 
 const isInvalidNonEmptyArray = (arr) => {
-  return !(Array.isArray(arr) && arr.length !== 0);
+  return !Array.isArray(arr) || arr.length === 0;
 };
 
 const isInvalidObject = (obj) => {
-  return !(!Array.isArray(obj) && typeof obj === "object");
+  return Array.isArray(obj) || typeof obj !== "object";
 };
 
 const isInvalidObjectID = (id) => {
