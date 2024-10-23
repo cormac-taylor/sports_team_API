@@ -79,8 +79,8 @@ const isInvalidNonEmptyArray = (arr) => {
   return !Array.isArray(arr) || arr.length === 0;
 };
 
-const isInvalidObject = (obj) => {
-  return Array.isArray(obj) || typeof obj !== "object";
+const isInvalidNonEmptyObject = (obj) => {
+  return Array.isArray(obj) || typeof obj !== "object" || Object.keys(obj).length === 0;
 };
 
 const isInvalidObjectID = (id) => {
@@ -143,7 +143,7 @@ const isInvalidFinalScore = (score) => {
   return home < 0 || away < 0 || home === away;
 };
 
-const updateRecord = (winLossCount, win) => {
+const addToRecord = (winLossCount, win) => {
   let winLossArr = winLossCount.split("-");
 
   let wins = parseInt(winLossArr[0]);
@@ -154,15 +154,28 @@ const updateRecord = (winLossCount, win) => {
   return `${wins}-${losses}`;
 };
 
+const subFromRecord = (winLossCount, win) => {
+  let winLossArr = winLossCount.split("-");
+
+  let wins = parseInt(winLossArr[0]);
+  let losses = parseInt(winLossArr[1]);
+
+  win ? wins-- : losses--;
+
+  return `${wins}-${losses}`;
+};
+
+
 export {
   isInvalidString,
   isInvalidInteger,
   isInvalidBoolean,
   isInvalidNonEmptyArray,
-  isInvalidObject,
+  isInvalidNonEmptyObject,
   isInvalidObjectID,
   isInvalidStateCode,
   isInvalidDate,
   isInvalidFinalScore,
-  updateRecord,
+  addToRecord,
+  subFromRecord,
 };
