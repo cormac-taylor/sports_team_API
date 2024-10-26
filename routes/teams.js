@@ -32,9 +32,7 @@ import {
   removeTeam,
   updateTeam,
 } from "../data/teams.js";
-import {} from "../helpers.js";
-
-// Note: please do not forget to export the router!
+import { isInvalidInteger, isInvalidStateCode, isInvalidString } from "../helpers.js";
 
 router.route("/");
 get(async (_, res) => {
@@ -54,22 +52,49 @@ get(async (_, res) => {
       .status(400)
       .json({ error: "There are no fields in the request body" });
   }
-  
+
   // TO DO
   //check all inputs, that should respond with a 400
   try {
-    blogPostData.title = validation.checkString(blogPostData.title, "Title");
-    blogPostData.body = validation.checkString(blogPostData.body, "Body");
-    blogPostData.posterId = validation.checkId(
-      blogPostData.posterId,
-      "Poster ID"
-    );
-    if (blogPostData.tags) {
-      blogPostData.tags = validation.checkStringArray(
-        blogPostData.tags,
-        "Tags"
-      );
+    if (isInvalidString(teamData.name)) 
+      throw "name is an invalid string"
+    teamData.name = teamData.name.trim()
+
+    if (isInvalidString(teamData.sport)) 
+      throw "sport is an invalid string"
+    teamData.sport = teamData.sport.trim()
+
+    teamData.yearFounded = teamData.yearFounded.trim()
+    if (!isNaN(teamData.yearFounded)) {
+      teamData.yearFounded = parseInt(teamData.yearFounded)
     }
+    if (isInvalidInteger(teamData.yearFounded)) 
+      throw "yearFounded is an invalid integer year"
+
+    if (isInvalidString(teamData.city)) 
+      throw "city is an invalid string"
+    teamData.city = teamData.city.trim()
+
+    if (isInvalidStateCode(teamData.state)) 
+      throw "state is an invalid string"
+    teamData.state = teamData.state.trim().toUpperCase()
+
+    if (isInvalidString(teamData.stadium)) 
+      throw "sport is an invalid string"
+    teamData.stadium = teamData.stadium.trim()
+
+    teamData.championshipsWon = teamData.championshipsWon.trim()
+    if (!isNaN(teamData.championshipsWon)) {
+      teamData.championshipsWon = parseInt(teamData.championshipsWon)
+    }
+    if (isInvalidInteger(teamData.championshipsWon)) 
+      throw "yearFounded is an invalid integer year"
+
+    // TO DO
+    if (isInvalidString(teamData.sport)) 
+      throw "sport is an invalid string"
+    teamData.sport = teamData.sport.trim()
+    teamData.players = 0
   } catch (e) {
     return res.status(400).json({ error: e });
   }
