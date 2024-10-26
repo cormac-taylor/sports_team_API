@@ -39,13 +39,66 @@ import {} from "../helpers.js";
 router.route("/");
 get(async (_, res) => {
   try {
-    const authorList = await getAuthors();
-    return res.json(authorList);
+    const teamList = await getAllTeams();
+    const teamListProj = teamList.map((obj) => {
+      return { _id: obj._id, name: obj.name };
+    });
+    return res.json(teamListProj);
   } catch (e) {
     return res.status(500).send(e);
   }
 }).post(async (req, res) => {
-  //code here for POST
+  const teamData = req.body;
+  if (!teamData || Object.keys(teamData).length === 0) {
+    return res
+      .status(400)
+      .json({ error: "There are no fields in the request body" });
+  }
+  
+  // TO DO
+  //check all inputs, that should respond with a 400
+  try {
+    blogPostData.title = validation.checkString(blogPostData.title, "Title");
+    blogPostData.body = validation.checkString(blogPostData.body, "Body");
+    blogPostData.posterId = validation.checkId(
+      blogPostData.posterId,
+      "Poster ID"
+    );
+    if (blogPostData.tags) {
+      blogPostData.tags = validation.checkStringArray(
+        blogPostData.tags,
+        "Tags"
+      );
+    }
+  } catch (e) {
+    return res.status(400).json({ error: e });
+  }
+
+  try {
+    const {
+      name,
+      sport,
+      yearFounded,
+      city,
+      state,
+      stadium,
+      championshipsWon,
+      players,
+    } = teamData;
+    const newTeam = await createTeam(
+      name,
+      sport,
+      yearFounded,
+      city,
+      state,
+      stadium,
+      championshipsWon,
+      players
+    );
+    return res.json(newTeam);
+  } catch (e) {
+    return res.status(500).json({ error: e });
+  }
 });
 
 router
