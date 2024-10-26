@@ -104,6 +104,20 @@ const isInvalidStateCode = (state) => {
   );
 };
 
+const isInvalidPlayersArr = (players) => {
+  for (let i = 0; i < players.length; i++) {
+    if (isInvalidObject(players[i])) throw "players must only contain objects.";
+
+    if (Object.keys(players[i]).length !== 3)
+      throw "each object must have 3 elements.";
+
+    for (const key of ["firstName", "lastName", "position"]) {
+      if (isInvalidString(players[i][key]))
+        throw "each object must have 3 keys (firstName,lastName,position) and each of their values must be strings.";
+    }
+  }
+};
+
 const isInvalidDate = (date, teamFounded, oppFounded) => {
   if (isInvalidString(date)) return true;
 
@@ -138,7 +152,7 @@ const isInvalidDate = (date, teamFounded, oppFounded) => {
   )
     return true;
 
-  if(year < teamFounded || year < oppFounded) return true
+  if (year < teamFounded || year < oppFounded) return true;
 
   let monthsLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
@@ -246,6 +260,7 @@ export {
   isInvalidNonEmptyObject,
   isInvalidObjectID,
   isInvalidStateCode,
+  isInvalidPlayersArr,
   isInvalidDate,
   isInvalidFinalScore,
   addToRecord,

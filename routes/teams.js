@@ -32,7 +32,7 @@ import {
   removeTeam,
   updateTeam,
 } from "../data/teams.js";
-import { isInvalidInteger, isInvalidStateCode, isInvalidString } from "../helpers.js";
+import { isInvalidInteger, isInvalidStateCode, isInvalidString, isInvalidPlayersArr } from "../helpers.js";
 
 router.route("/");
 get(async (_, res) => {
@@ -90,11 +90,10 @@ get(async (_, res) => {
     if (isInvalidInteger(teamData.championshipsWon)) 
       throw "yearFounded is an invalid integer year"
 
-    // TO DO
-    if (isInvalidString(teamData.sport)) 
-      throw "sport is an invalid string"
-    teamData.sport = teamData.sport.trim()
-    teamData.players = 0
+    teamData.players = JSON.parse(teamData.players)
+    if (isInvalidPlayersArr(teamData.players)) 
+      throw "players is an invalid player array"
+    
   } catch (e) {
     return res.status(400).json({ error: e });
   }
