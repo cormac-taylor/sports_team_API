@@ -1,14 +1,10 @@
-// This data file should export all functions using the ES6 standard as shown in the lecture code
+/*
+ * Cormac Taylor
+ * I pledge my honor that I have abided by the Stevens Honor System.
+ */
 import { teams } from "../config/mongoCollections.js";
 import { ObjectId } from "mongodb";
-import {
-  isInvalidString,
-  isInvalidInteger,
-  isInvalidNonEmptyArray,
-  isInvalidObject,
-  isInvalidObjectID,
-  isInvalidStateCode,
-} from "../helpers.js";
+import { isInvalidObjectID, validateArgs } from "../helpers.js";
 
 const createTeam = async (
   name,
@@ -20,46 +16,16 @@ const createTeam = async (
   championshipsWon,
   players
 ) => {
-  if (
-    isInvalidString(name) ||
-    isInvalidString(sport) ||
-    isInvalidString(city) ||
-    isInvalidString(stadium)
-  )
-    throw "name, sport, city, and stadium must all be strings of least one non-space character.";
-
-  if (
-    isInvalidString(state) ||
-    state.trim().length !== 2 ||
-    isInvalidStateCode(state)
-  )
-    throw "state must be a valid US state code.";
-
-  if (
-    isInvalidInteger(yearFounded) ||
-    yearFounded < 1850 ||
-    yearFounded > new Date().getFullYear()
-  )
-    throw `yearFounded must be a whole number between 1850 and ${new Date().getFullYear()} (inclusive).`;
-
-  if (isInvalidInteger(championshipsWon) || championshipsWon < 0)
-    throw "yearFounded must be a non-negative whole number.";
-
-  if (isInvalidNonEmptyArray(players))
-    throw "players must be a non-empty array.";
-
-  for (let i = 0; i < players.length; i++) {
-    if (isInvalidObject(players[i])) throw "players must only contain objects.";
-
-    if (Object.keys(players[i]).length !== 3)
-      throw "each object must have 3 elements.";
-
-    for (const key of ["firstName", "lastName", "position"]) {
-      if (isInvalidString(players[i][key]))
-        throw "each object must have 3 keys (firstName,lastName,position) and each of their values must be strings.";
-      else players[i][key] = players[i][key].trim();
-    }
-  }
+  validateArgs(
+    name,
+    sport,
+    yearFounded,
+    city,
+    state,
+    stadium,
+    championshipsWon,
+    players
+  );
 
   const newTeam = {
     name: name.trim(),
@@ -93,10 +59,10 @@ const getAllTeams = async () => {
     .toArray();
   if (!teamList) throw "could not get all teams.";
 
-  teamList = teamList.map((elm) => {
-    elm._id = elm._id.toString();
-    return elm;
-  });
+  // teamList = teamList.map((elm) => {
+  //   elm._id = elm._id.toString();
+  //   return elm;
+  // });
   return teamList;
 };
 
@@ -113,7 +79,7 @@ const getTeamById = async (id) => {
 
   if (team === null) throw "No team with that id.";
 
-  team._id = team._id.toString();
+  // team._id = team._id.toString();
   return team;
 };
 
@@ -128,9 +94,7 @@ const removeTeam = async (id) => {
     _id: ObjectId.createFromHexString(id),
   });
 
-  if (!deletionInfo) {
-    throw `could not delete team with id ${id}.`;
-  }
+  if (!deletionInfo) throw `could not delete team with id ${id}.`;
 
   return `${deletionInfo.name} have been successfully deleted!`;
 };
@@ -149,46 +113,16 @@ const updateTeam = async (
   if (isInvalidObjectID(id))
     throw "id must contain be a string of least one non-space character and a valid object ID.";
 
-  if (
-    isInvalidString(name) ||
-    isInvalidString(sport) ||
-    isInvalidString(city) ||
-    isInvalidString(stadium)
-  )
-    throw "name, sport, city, and stadium must all be strings of least one non-space character.";
-
-  if (
-    isInvalidString(state) ||
-    state.trim().length !== 2 ||
-    isInvalidStateCode(state)
-  )
-    throw "state must be a valid US state code.";
-
-  if (
-    isInvalidInteger(yearFounded) ||
-    yearFounded < 1850 ||
-    yearFounded > new Date().getFullYear()
-  )
-    throw `yearFounded must be a whole number between 1850 and ${new Date().getFullYear()} (inclusive).`;
-
-  if (isInvalidInteger(championshipsWon) || championshipsWon < 0)
-    throw "yearFounded must be a non-negative whole number.";
-
-  if (isInvalidNonEmptyArray(players))
-    throw "players must be a non-empty array.";
-
-  for (let i = 0; i < players.length; i++) {
-    if (isInvalidObject(players[i])) throw "players must only contain objects.";
-
-    if (Object.keys(players[i]).length !== 3)
-      throw "each object must have 3 elements.";
-
-    for (const key of ["firstName", "lastName", "position"]) {
-      if (isInvalidString(players[i][key]))
-        throw "each object must have 3 keys (firstName,lastName,position) and each of their values must be strings.";
-      else players[i][key] = players[i][key].trim();
-    }
-  }
+  validateArgs(
+    name,
+    sport,
+    yearFounded,
+    city,
+    state,
+    stadium,
+    championshipsWon,
+    players
+  );
 
   id = id.trim();
   const { winLossCount, games } = await getTeamById(id);

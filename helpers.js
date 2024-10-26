@@ -75,12 +75,20 @@ const isInvalidBoolean = (bool) => {
   return typeof bool !== "boolean";
 };
 
+const isInvalidArray = (arr) => {
+  return !Array.isArray(arr);
+};
+
 const isInvalidNonEmptyArray = (arr) => {
-  return !Array.isArray(arr) || arr.length === 0;
+  return isInvalidArray(arr) || arr.length === 0;
+};
+
+const isInvalidObject = (obj) => {
+  return Array.isArray(obj) || typeof obj !== "object";
 };
 
 const isInvalidNonEmptyObject = (obj) => {
-  return Array.isArray(obj) || typeof obj !== "object" || Object.keys(obj).length === 0;
+  return isInvalidObject(obj) || Object.keys(obj).length === 0;
 };
 
 const isInvalidObjectID = (id) => {
@@ -88,14 +96,20 @@ const isInvalidObjectID = (id) => {
 };
 
 const isInvalidStateCode = (state) => {
-  return !US_STATE_CODES.includes(state.trim().toUpperCase());
+  state = state.trim();
+  return (
+    isInvalidString(state) ||
+    state.length !== 2 ||
+    !US_STATE_CODES.includes(state.toUpperCase())
+  );
 };
 
 const isInvalidDate = (date) => {
   if (isInvalidString(date)) return true;
-  if (date.length !== 10 || date[2] !== "/" || date[5] !== "/") return true;
 
   date = date.trim();
+  if (date.length !== 10 || date[2] !== "/" || date[5] !== "/") return true;
+
   for (let c of date) {
     if (c !== "/" || c < "0" || c > "9") return true;
   }
@@ -165,12 +179,60 @@ const subFromRecord = (winLossCount, win) => {
   return `${wins}-${losses}`;
 };
 
+const validateArgs = (
+  name,
+  sport,
+  yearFounded,
+  city,
+  state,
+  stadium,
+  championshipsWon,
+  players
+) => {
+  if (
+    isInvalidString(name) ||
+    isInvalidString(sport) ||
+    isInvalidString(city) ||
+    isInvalidString(stadium)
+  )
+    throw "name, sport, city, and stadium must all be strings of least one non-space character.";
+
+  if (isInvalidStateCode(state)) throw "state must be a valid US state code.";
+
+  if (
+    isInvalidInteger(yearFounded) ||
+    yearFounded < 1850 ||
+    yearFounded > new Date().getFullYear()
+  )
+    throw `yearFounded must be a whole number between 1850 and ${new Date().getFullYear()} (inclusive).`;
+
+  if (isInvalidInteger(championshipsWon) || championshipsWon < 0)
+    throw "yearFounded must be a non-negative whole number.";
+
+  if (isInvalidNonEmptyArray(players))
+    throw "players must be a non-empty array.";
+
+  for (let i = 0; i < players.length; i++) {
+    if (isInvalidObject(players[i])) throw "players must only contain objects.";
+
+    if (Object.keys(players[i]).length !== 3)
+      throw "each object must have 3 elements.";
+
+    for (const key of ["firstName", "lastName", "position"]) {
+      if (isInvalidString(players[i][key]))
+        throw "each object must have 3 keys (firstName,lastName,position) and each of their values must be strings.";
+      else players[i][key] = players[i][key].trim();
+    }
+  }
+};
 
 export {
   isInvalidString,
   isInvalidInteger,
   isInvalidBoolean,
+  isInvalidArray,
   isInvalidNonEmptyArray,
+  isInvalidObject,
   isInvalidNonEmptyObject,
   isInvalidObjectID,
   isInvalidStateCode,
@@ -178,4 +240,5 @@ export {
   isInvalidFinalScore,
   addToRecord,
   subFromRecord,
+  validateArgs,
 };

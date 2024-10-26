@@ -1,5 +1,7 @@
-// This data file should export all functions using the ES6 standard as shown in the lecture code
-
+/*
+ * Cormac Taylor
+ * I pledge my honor that I have abided by the Stevens Honor System.
+ */
 import { teams } from "../config/mongoCollections.js";
 import { ObjectId } from "mongodb";
 import { getTeamById } from "./teams.js";
