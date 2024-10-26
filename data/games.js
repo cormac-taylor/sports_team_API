@@ -6,9 +6,6 @@ import { teams } from "../config/mongoCollections.js";
 import { ObjectId } from "mongodb";
 import { getTeamById } from "./teams.js";
 import {
-  isInvalidString,
-  isInvalidInteger,
-  isInvalidNonEmptyArray,
   isInvalidNonEmptyObject,
   isInvalidObjectID,
   isInvalidDate,
