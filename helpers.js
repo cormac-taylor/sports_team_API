@@ -104,7 +104,7 @@ const isInvalidStateCode = (state) => {
   );
 };
 
-const isInvalidDate = (date) => {
+const isInvalidDate = (date, teamFounded, oppFounded) => {
   if (isInvalidString(date)) return true;
 
   date = date.trim();
@@ -121,14 +121,24 @@ const isInvalidDate = (date) => {
   let day = parseInt(dateArr[1]);
   let year = parseInt(dateArr[2]);
 
+  const currentDate = new Date();
   if (
     year < 1850 ||
-    year > new Date().getFullYear() ||
+    year > currentDate.getFullYear() ||
     month < 1 ||
     month > 12 ||
     day < 1
   )
     return true;
+
+  if (
+    year == currentDate.getFullYear() &&
+    (month > currentDate.getMonth() + 1 ||
+      (month === currentDate.getMonth() + 1 && day > currentDate.getDate))
+  )
+    return true;
+
+  if(year < teamFounded || year < oppFounded) return true
 
   let monthsLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 

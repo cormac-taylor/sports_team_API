@@ -29,10 +29,6 @@ const createGame = async (
   if (isInvalidObjectID(teamId))
     throw "teamId must be a string of least one non-space character and a valid object ID.";
 
-  if (isInvalidDate(gameDate)) {
-    throw "date must be a string of form mm/dd/yyyy.";
-  }
-
   if (isInvalidObjectID(opposingTeamId))
     throw "opposingTeamId must contain be a string of least one non-space character and a valid object ID.";
 
@@ -49,6 +45,8 @@ const createGame = async (
 
   (teamId = teamId.trim()), (opposingTeamId = opposingTeamId.trim());
 
+  if (teamId === opposingTeamId) throw "team cannot play itself";
+
   try {
     const teamObj = await getTeamById(teamId);
   } catch (e) {
@@ -56,9 +54,15 @@ const createGame = async (
   }
 
   try {
-    const { sport: oppSport } = await getTeamById(opposingTeamId);
+    const { yearFounded: oppFounded, sport: oppSport } = await getTeamById(
+      opposingTeamId
+    );
   } catch (e) {
     throw `opposingTeamId: ${e}`;
+  }
+
+  if (isInvalidDate(gameDate, teamObj.yearFounded, oppFounded)) {
+    throw "date must be a string of form mm/dd/yyyy played after year 1850 and before today (inclusive) and both teams must be founded.";
   }
 
   if (teamObj.sport.toLowerCase() !== oppSport.toLowerCase()) {
@@ -113,53 +117,103 @@ const getGame = async (gameId) => {
   return foundGame.games[0];
 };
 
-// WORKING ON THIS
 const updateGame = async (gameId, updateObject) => {
   if (isInvalidObjectID(gameId))
     throw "teamId must be a string of least one non-space character and a valid object ID.";
+  gameId = gameId.trim();
 
   if (isInvalidNonEmptyObject(updateObject))
     throw "updateObject must be an non-empty object.";
 
-  if (updateObject.gameDate && isInvalidDate(updateObject.gameDate))
-    throw "date must be a string of form mm/dd/yyyy.";
+  const gameObj = await getGame(gameId);
+  let oppObj = await getTeamById(gameObj.opposingTeamId);
 
+  const teamsCollection = await teams();
+  const teamObj = await teamsCollection.findOne({
+    "games._id": ObjectId.createFromHexString(gameId),
+  });
+  if (!teamObj) throw "gameId not found.";
 
+  const updateGameObj = {};
   if (updateObject.opposingTeamId) {
-    if (isInvalidObjectID(updateObject.opposingTeamId)) {
+    updateObject.opposingTeamId = updateObject.opposingTeamId.trim();
+
+    if (isInvalidObjectID(updateObject.opposingTeamId))
       throw "opposingTeamId must contain be a string of least one non-space character and a valid object ID.";
-    }
-    let opposingTeamId = updateObject.opposingTeamId.trim();
-    // (teamId = teamId.trim());
+
+    if (teamObj._id.toString() === updateObject.opposingTeamId)
+      throw "team cannot play itself";
 
     try {
-      const teamObj = await getTeamById(teamId);
-    } catch (e) {
-      throw `teamId: ${e}`;
-    }
-
-    try {
-      const { sport: oppSport } = await getTeamById(opposingTeamId);
+      oppObj = await getTeamById(updateObject.opposingTeamId);
     } catch (e) {
       throw `opposingTeamId: ${e}`;
     }
 
-    if (teamObj.sport.toLowerCase() !== oppSport.toLowerCase()) {
-      throw "a game must be played between two teams of the same sport";
-    }
+    if (oppObj.sport.toLowerCase() !== teamObj.sport.toLowerCase())
+      throw "teams must play the same sport";
+
+    updateGameObj.opposingTeamId = updateObject.opposingTeamId;
   }
 
-  if (
-    updateObject.homeOrAway &&
-    (updateObject.homeOrAway !== "Home" || updateObject.homeOrAway !== "Away")
-  )
-    throw 'homeOrAway can only be the follow case sensitive values: "Home" or "Away"';
+  if (updateObject.gameDate) {
+    updateObject.gameDate = updateObject.gameDate.trim();
+    if (
+      isInvalidDate(
+        updateObject.gameDate,
+        teamObj.yearFounded,
+        oppObj.yearFounded
+      )
+    )
+      throw "new gameDate is invalid";
+    updateGameObj.gameDate = updateObject.gameDate;
+  }
 
-  if (updateObject.finalScore && isInvalidFinalScore(updateObject.finalScore))
-    throw "finalScore must be a string of form score1-score2 where scoreX is non-negative and different.";
+  if (updateObject.homeOrAway) {
+    updateObject.homeOrAway = updateObject.homeOrAway.trim();
+    if (
+      updateObject.homeOrAway !== "Home" ||
+      updateObject.homeOrAway !== "Away"
+    )
+      throw 'homeOrAway can only be the follow case sensitive values: "Home" or "Away"';
+      updateGameObj.homeOrAway = updateObject.homeOrAway;
 
-  if (updateObject.win !== undefined && isInvalidBoolean(updateObject.win))
-    throw "win must be a boolean.";
+  }
+
+  if (updateObject.finalScore) {
+    updateObject.finalScore = updateObject.finalScore.trim();
+    if (isInvalidFinalScore(finalScore))
+      throw "finalScore must be a string of form score1-score2 where scoreX is non-negative and different.";
+    updateGameObj.finalScore = updateObject.finalScore;
+
+  }
+
+  if (updateObject.win !== undefined) {
+    if (isInvalidBoolean(updateObject.win)) throw "win must be a boolean.";
+
+    if (updateObject.win !== gameObj.win) {
+      let newRecord = subFromRecord(gameObj.winLossCount, gameObj.win);
+      newRecord = addToRecord(newRecord, updateObject.win);
+
+      let updateRecord = await teamsCollection.findOneAndUpdate(
+        { _id: teamObj._id },
+        { $set: { winLossCount: newRecord } },
+        { returnDocument: "after" }
+      );
+      if (!updateRecord) throw "Could not update winLossCount in team.";
+    }
+    updateGameObj.win = updateObject.win;
+  }
+
+  let newGame = await teamsCollection.findOneAndUpdate(
+    { _id: ObjectId.createFromHexString(gameId) },
+    { $set: updateGameObj },
+    { returnDocument: "after" }
+  );
+  if (!newGame) throw "Could not update game.";
+
+  const updatedTeam = await getTeamById(teamObj._id.toString());
+  return updatedTeam;
 };
 
 const removeGame = async (gameId) => {
