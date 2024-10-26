@@ -224,7 +224,6 @@ const removeGame = async (gameId) => {
   const team = await teamsCollection.findOne({
     "games._id": ObjectId.createFromHexString(gameId),
   });
-
   if (!team) throw "Game not found.";
 
   const removeGame = await teamsCollection.updateOne(
@@ -234,10 +233,9 @@ const removeGame = async (gameId) => {
       $set: { winLossCount: subFromRecord(team.winLossCount, team.games.win) },
     }
   );
-
   if (!removeGame) throw "Error removing the game.";
 
-  return await getTeamById(team._id);
+  return await getTeamById(team._id.toString());
 };
 
 export { createGame, getAllGames, getGame, updateGame, removeGame };
