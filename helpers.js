@@ -59,7 +59,7 @@ const US_STATE_CODES = [
 ];
 
 const isInvalidString = (str) => {
-  return typeof str !== "string" || str.trim() === 0;
+  return typeof str !== "string" || str.trim().length === 0;
 };
 
 const isInvalidInteger = (num) => {

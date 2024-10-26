@@ -1,13 +1,4 @@
 // router
-//   .route("/")
-//   .get(async (req, res) => {
-//     //code here for GET
-//   })
-//   .post(async (req, res) => {
-//     //code here for POST
-//   });
-
-// router
 //   .route("/:teamId")
 //   .get(async (req, res) => {
 //     //code here for GET
@@ -62,39 +53,30 @@ router
 
     // //check all inputs, that should respond with a 400
     try {
-      // if (isInvalidString(teamData.name)) throw "name is an invalid string";
-      // teamData.name = teamData.name.trim();
+      if (isInvalidString(teamData.name)) throw "name is an invalid string";
+      teamData.name = teamData.name.trim();
 
-      // if (isInvalidString(teamData.sport)) throw "sport is an invalid string";
-      // teamData.sport = teamData.sport.trim();
+      if (isInvalidString(teamData.sport)) throw "sport is an invalid string";
+      teamData.sport = teamData.sport.trim();
 
-      // teamData.yearFounded = teamData.yearFounded.trim();
-      // if (!isNaN(teamData.yearFounded)) {
-      //   teamData.yearFounded = parseInt(teamData.yearFounded);
-      // }
-      // if (isInvalidInteger(teamData.yearFounded))
-      //   throw "yearFounded is an invalid integer year";
+      if (isInvalidInteger(teamData.yearFounded))
+        throw "yearFounded is an invalid integer year";
 
-      // if (isInvalidString(teamData.city)) throw "city is an invalid string";
-      // teamData.city = teamData.city.trim();
+      if (isInvalidString(teamData.city)) throw "city is an invalid string";
+      teamData.city = teamData.city.trim();
 
-      // if (isInvalidStateCode(teamData.state))
-      //   throw "state is an invalid string";
-      // teamData.state = teamData.state.trim().toUpperCase();
+      if (isInvalidStateCode(teamData.state))
+        throw "state is an invalid US state code";
+      teamData.state = teamData.state.trim().toUpperCase();
 
-      // if (isInvalidString(teamData.stadium)) throw "sport is an invalid string";
-      // teamData.stadium = teamData.stadium.trim();
+      if (isInvalidString(teamData.stadium)) throw "stadium is an invalid string";
+      teamData.stadium = teamData.stadium.trim();
 
-      // teamData.championshipsWon = teamData.championshipsWon.trim();
-      // if (!isNaN(teamData.championshipsWon)) {
-      //   teamData.championshipsWon = parseInt(teamData.championshipsWon);
-      // }
-      // if (isInvalidInteger(teamData.championshipsWon))
-      //   throw "yearFounded is an invalid integer year";
+      if (isInvalidInteger(teamData.championshipsWon))
+        throw "championshipsWon should be a non-negative integer";
 
-      // teamData.players = JSON.parse(teamData.players);
-      // if (isInvalidPlayersArr(teamData.players))
-      //   throw "players is an invalid player array";
+      if (isInvalidPlayersArr(teamData.players))
+        throw "players is an invalid player array";
     } catch (e) {
       return res.status(400).json({ error: e });
     }
