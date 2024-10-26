@@ -55,7 +55,6 @@ const US_STATE_CODES = [
   "WV",
   "WI",
   "WY",
-  "DC", // Included District of Columbia
 ];
 
 const isInvalidString = (str) => {
