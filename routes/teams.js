@@ -1,8 +1,5 @@
-// Import the express router as shown in the lecture code
-// Note: please do not forget to export the router!
-
 router
-  .route('/')
+  .route("/")
   .get(async (req, res) => {
     //code here for GET
   })
@@ -11,7 +8,7 @@ router
   });
 
 router
-  .route('/:teamId')
+  .route("/:teamId")
   .get(async (req, res) => {
     //code here for GET
   })
@@ -22,33 +19,37 @@ router
     //code here for PUT
   });
 
-  /*
+/*
  * Cormac Taylor
  * I pledge my honor that I have abided by the Stevens Honor System.
  */
 import { Router } from "express";
 const router = Router();
-import { createTeam, getAllTeams, getTeamById, removeTeam, updateTeam } from "../data/teams.js";
-import {  } from "../helpers.js";
+import {
+  createTeam,
+  getAllTeams,
+  getTeamById,
+  removeTeam,
+  updateTeam,
+} from "../data/teams.js";
+import {} from "../helpers.js";
 
 // Note: please do not forget to export the router!
 
-router
-  .route('/')
-  get(async (_, res) => {
-    try {
-      const authorList = await getAuthors();
-      return res.json(authorList);
-    } catch (e) {
-      return res.status(500).send(e);
-    }
-  })
-  .post(async (req, res) => {
-    //code here for POST
-  });
+router.route("/");
+get(async (_, res) => {
+  try {
+    const authorList = await getAuthors();
+    return res.json(authorList);
+  } catch (e) {
+    return res.status(500).send(e);
+  }
+}).post(async (req, res) => {
+  //code here for POST
+});
 
 router
-  .route('/:teamId')
+  .route("/:teamId")
   .get(async (req, res) => {
     try {
       if (!isValidString(req.params.id)) {

@@ -1,8 +1,5 @@
-// Import the express router as shown in the lecture code
-// Note: please do not forget to export the router!
-
 router
-  .route('/:teamId')
+  .route("/:teamId")
   .get(async (req, res) => {
     //code here for GET
   })
@@ -11,7 +8,7 @@ router
   });
 
 router
-  .route('/game/:gameId')
+  .route("/game/:gameId")
   .get(async (req, res) => {
     //code here for GET
   })
@@ -22,16 +19,20 @@ router
     //code here for DELETE
   });
 
-
-
-  /*
+/*
  * Cormac Taylor
  * I pledge my honor that I have abided by the Stevens Honor System.
  */
 import { Router } from "express";
 const router = Router();
-import { createGame, getAllGames, getGame, updateGame, removeGame } from "../data/games.js";
-import {  } from "../helpers.js";
+import {
+  createGame,
+  getAllGames,
+  getGame,
+  updateGame,
+  removeGame,
+} from "../data/games.js";
+import {} from "../helpers.js";
 
 router
   .route("/:teamId")
