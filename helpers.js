@@ -175,6 +175,9 @@ const isInvalidFinalScore = (score) => {
   const scoreArr = score.split("-");
   if (scoreArr.length !== 2) return true;
 
+  if (isInvalidString(scoreArr[0]) || isInvalidString(scoreArr[1]))
+    throw "both teams must have a score"
+  
   let home = parseInt(scoreArr[0]);
   let away = parseInt(scoreArr[1]);
 
