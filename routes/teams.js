@@ -1,15 +1,3 @@
-// router
-//   .route("/:teamId")
-//   .get(async (req, res) => {
-//     //code here for GET
-//   })
-//   .delete(async (req, res) => {
-//     //code here for DELETE
-//   })
-//   .put(async (req, res) => {
-//     //code here for PUT
-//   });
-
 /*
  * Cormac Taylor
  * I pledge my honor that I have abided by the Stevens Honor System.
