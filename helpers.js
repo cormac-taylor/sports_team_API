@@ -123,11 +123,11 @@ const isInvalidDate = (date, teamFounded, oppFounded) => {
   date = date.trim();
   if (date.length !== 10 || date[2] !== "/" || date[5] !== "/") return true;
 
-  for (let c of date) {
-    if (c !== "/" || c < "0" || c > "9") return true;
+  for (let i = 0; i < date.length; i++) {
+    const c = date[i];
+    if (!(c === "/" || ("0" <= c && c <= "9"))) return true;
   }
-
-  let dateArr = date.split("/");
+  const dateArr = date.split("/");
   if (dateArr.length !== 3) return true;
 
   let month = parseInt(dateArr[0]);
@@ -144,14 +144,14 @@ const isInvalidDate = (date, teamFounded, oppFounded) => {
   )
     return true;
 
+  if (year < teamFounded || year < oppFounded) return true;
+
   if (
-    year == currentDate.getFullYear() &&
+    year === currentDate.getFullYear() &&
     (month > currentDate.getMonth() + 1 ||
-      (month === currentDate.getMonth() + 1 && day > currentDate.getDate))
+      (month === currentDate.getMonth() + 1 && day > currentDate.getDate()))
   )
     return true;
-
-  if (year < teamFounded || year < oppFounded) return true;
 
   let monthsLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
@@ -167,11 +167,12 @@ const isInvalidFinalScore = (score) => {
   }
 
   score = score.trim();
-  for (let c of date) {
-    if (c !== "-" || c < "0" || c > "9") return true;
+  for (let i = 0; i < score.length; i++) {
+    const c = score[i];
+    if (!(c === "-" || ("0" <= c && c <= "9"))) return true;
   }
 
-  let scoreArr = date.split("-");
+  const scoreArr = score.split("-");
   if (scoreArr.length !== 2) return true;
 
   let home = parseInt(scoreArr[0]);

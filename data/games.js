@@ -13,6 +13,7 @@ import {
   isInvalidBoolean,
   addToRecord,
   subFromRecord,
+  isInvalidString,
 } from "../helpers.js";
 
 const createGame = async (
@@ -29,7 +30,7 @@ const createGame = async (
   if (isInvalidObjectID(opposingTeamId))
     throw "opposingTeamId must contain be a string of least one non-space character and a valid object ID.";
 
-  if (homeOrAway !== "Home" || homeOrAway !== "Away")
+  if (isInvalidString(homeOrAway) || (homeOrAway !== "Home" && homeOrAway !== "Away"))
     throw 'homeOrAway can only be the follow case sensitive values: "Home" or "Away"';
 
   if (isInvalidFinalScore(finalScore)) {
@@ -44,16 +45,22 @@ const createGame = async (
 
   if (teamId === opposingTeamId) throw "team cannot play itself";
 
+  let teamObj;
   try {
-    const teamObj = await getTeamById(teamId);
+    const team = await getTeamById(teamId);
+    teamObj = team;
   } catch (e) {
     throw `teamId: ${e}`;
   }
 
+  let oppFounded;
+  let oppSport;
   try {
-    const { yearFounded: oppFounded, sport: oppSport } = await getTeamById(
+    const { yearFounded, sport } = await getTeamById(
       opposingTeamId
     );
+    oppFounded = yearFounded;
+    oppSport = sport;  
   } catch (e) {
     throw `opposingTeamId: ${e}`;
   }
@@ -72,7 +79,7 @@ const createGame = async (
     gameDate: gameDate.trim(),
     opposingTeamId,
     homeOrAway: homeOrAway.trim(),
-    finalScore: teamId.trim(),
+    finalScore: finalScore.trim(),
     win,
   };
 

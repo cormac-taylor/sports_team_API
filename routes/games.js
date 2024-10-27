@@ -32,7 +32,14 @@ import {
   updateGame,
   removeGame,
 } from "../data/games.js";
-import { isInvalidBoolean, isInvalidDate, isInvalidFinalScore, isInvalidObjectID } from "../helpers.js";
+import {
+  isInvalidBoolean,
+  isInvalidDate,
+  isInvalidFinalScore,
+  isInvalidObjectID,
+  isInvalidString,
+} from "../helpers.js";
+import { getTeamById } from "../data/teams.js";
 
 router
   .route("/:teamId")
@@ -69,36 +76,47 @@ router
         .json({ error: "There are no fields in the request body" });
     }
 
+    let teamYearFounded;
+    try {
+      const { yearFounded } = await getTeamById(req.params.teamId);
+      teamYearFounded = yearFounded;
+    } catch (e) {
+      return res.status(404).json({ error: e });
+    }
+
     try {
       if (isInvalidObjectID(teamData.opposingTeamId))
         throw "opposingTeamId is invalid objectID";
 
-      // get team and opp yearFounded
+      const { yearFounded: oppYearFounded } = await getTeamById(
+        teamData.opposingTeamId
+      );
 
-      // TO DO
-      if (isInvalidDate(teamData.name, , )) throw "name is an invalid string";
-      teamData.name = teamData.name.trim();
+      if (isInvalidDate(teamData.gameDate, teamYearFounded, oppYearFounded))
+        throw "gameDate is an invalid date";
+      teamData.gameDate = teamData.gameDate.trim();
 
-      if (isInvalidString(teamData.sport)) throw "sport is an invalid string";
-      teamData.sport = teamData.sport.trim();
+      teamData.homeOrAway = teamData.homeOrAway.trim();
+      if (
+        isInvalidString(teamData.homeOrAway) ||
+        (teamData.homeOrAway !== "Home" && teamData.homeOrAway !== "Away")
+      )
+        throw "homeOrAway is not Home or Away";
 
-      if (isInvalidInteger(teamData.championshipsWon))
-        throw "championshipsWon should be a non-negative integer";
-
-      if (isInvalidFinalScore(teamData.finalScore)) throw "finalScore is invalid";
+      if (isInvalidFinalScore(teamData.finalScore))
+        throw "finalScore is invalid";
       teamData.finalScore = teamData.finalScore.trim();
 
-      if(isInvalidBoolean(teamData.win))
-        throw "win must be a boolean"
+      if (isInvalidBoolean(teamData.win)) throw "win must be a boolean";
     } catch (e) {
       return res.status(400).json({ error: e });
     }
 
     try {
-      const { teamId, gameDate, opposingTeamId, homeOrAway, finalScore, win } =
+      const { gameDate, opposingTeamId, homeOrAway, finalScore, win } =
         teamData;
       const newGame = await createGame(
-        teamId,
+        req.params.teamId,
         gameDate,
         opposingTeamId,
         homeOrAway,
