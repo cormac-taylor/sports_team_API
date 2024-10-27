@@ -126,7 +126,20 @@ router
 router
   .route("/game/:gameId")
   .get(async (req, res) => {
-    //code for GET
+    try {
+      if (isInvalidObjectID(req.params.gameId)) {
+        throw "gameId must be a a valid object ID.";
+      }
+      req.params.gameId = req.params.gameId.trim();
+    } catch (e) {
+      return res.status(400).json({ error: e });
+    }
+    try {
+      const game = await getGame(req.params.gameId);
+      return res.json(game);
+    } catch (e) {
+      return res.status(404).json(e);
+    }
   })
   .patch(async (req, res) => {
     //code for PATCH
