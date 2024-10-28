@@ -196,7 +196,7 @@ const updateGame = async (gameId, updateObject) => {
     if (isInvalidBoolean(updateObject.win)) throw "win must be a boolean.";
 
     if (updateObject.win !== gameObj.win) {
-      let newRecord = subFromRecord(gameObj.winLossCount, gameObj.win);
+      let newRecord = subFromRecord(teamObj.winLossCount, gameObj.win);
       newRecord = addToRecord(newRecord, updateObject.win);
 
       let updateRecord = await teamsCollection.findOneAndUpdate(
