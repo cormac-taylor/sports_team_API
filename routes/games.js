@@ -22,6 +22,7 @@ import {
   getGame,
   updateGame,
   removeGame,
+  getTeamByGameID,
 } from "../data/games.js";
 import {
   isInvalidBoolean,
@@ -169,12 +170,7 @@ router
     let updateData = {};
     try {
       let oppObj = await getTeamById(oldGame.opposingTeamId);
-
-      const teamsCollection = await teams();
-      const teamObj = await teamsCollection.findOne({
-        "games._id": ObjectId.createFromHexString(req.params.gameId),
-      });
-      if (!teamObj) throw "gameId not found.";
+      const teamObj = await getTeamByGameID(req.params.gameId);
 
       if (gameData.opposingTeamId) {
         gameData.opposingTeamId = gameData.opposingTeamId.trim();
@@ -216,13 +212,13 @@ router
           isInvalidString(gameData.homeOrAway) ||
           (gameData.homeOrAway !== "Home" && gameData.homeOrAway !== "Away")
         )
-          throw 'homeOrAway can only be the follow case sensitive values: "Home" or "Away"';
+          throw "homeOrAway can only be the follow case sensitive values: Home or Away";
         updateData.homeOrAway = gameData.homeOrAway;
       }
 
       if (gameData.finalScore) {
         gameData.finalScore = gameData.finalScore.trim();
-        if (isInvalidFinalScore(finalScore))
+        if (isInvalidFinalScore(gameData.finalScore))
           throw "finalScore must be a string of form score1-score2 where scoreX is non-negative and different.";
         updateData.finalScore = gameData.finalScore;
       }
@@ -236,14 +232,28 @@ router
     }
 
     try {
-      const newGame = await updateGame(req.params.teamId, updateData);
+      const newGame = await updateGame(req.params.gameId, updateData);
       return res.json(newGame);
     } catch (e) {
       return res.status(500).json({ error: e });
     }
   })
   .delete(async (req, res) => {
-    //code here for DELETE
+    try {
+      if (isInvalidObjectID(req.params.gameId)) {
+        throw "gameId must be a a valid object ID.";
+      }
+      req.params.gameId = req.params.gameId.trim();
+    } catch (e) {
+      return res.status(400).json({ error: e });
+    }
+
+    try {
+      const team = await removeGame(req.params.gameId);
+      return res.json(team);
+    } catch (e) {
+      return res.status(404).json(e);
+    }
   });
 
 export default router;

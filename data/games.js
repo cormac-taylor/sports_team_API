@@ -30,8 +30,11 @@ const createGame = async (
   if (isInvalidObjectID(opposingTeamId))
     throw "opposingTeamId must contain be a string of least one non-space character and a valid object ID.";
 
-  if (isInvalidString(homeOrAway) || (homeOrAway !== "Home" && homeOrAway !== "Away"))
-    throw 'homeOrAway can only be the follow case sensitive values: "Home" or "Away"';
+  if (
+    isInvalidString(homeOrAway) ||
+    (homeOrAway.trim() !== "Home" && homeOrAway.trim() !== "Away")
+  )
+    throw "homeOrAway can only be the follow case sensitive values: Home or Away";
 
   if (isInvalidFinalScore(finalScore)) {
     throw "finalScore must be a string of form score1-score2 where scoreX is non-negative and different.";
@@ -56,11 +59,9 @@ const createGame = async (
   let oppFounded;
   let oppSport;
   try {
-    const { yearFounded, sport } = await getTeamById(
-      opposingTeamId
-    );
+    const { yearFounded, sport } = await getTeamById(opposingTeamId);
     oppFounded = yearFounded;
-    oppSport = sport;  
+    oppSport = sport;
   } catch (e) {
     throw `opposingTeamId: ${e}`;
   }
@@ -132,11 +133,7 @@ const updateGame = async (gameId, updateObject) => {
   const gameObj = await getGame(gameId);
   let oppObj = await getTeamById(gameObj.opposingTeamId);
 
-  const teamsCollection = await teams();
-  const teamObj = await teamsCollection.findOne({
-    "games._id": ObjectId.createFromHexString(gameId),
-  });
-  if (!teamObj) throw "gameId not found.";
+  const teamObj = await getTeamByGameID(gameId);
 
   const updateGameObj = {};
   if (updateObject.opposingTeamId) {
@@ -157,7 +154,7 @@ const updateGame = async (gameId, updateObject) => {
     if (oppObj.sport.toLowerCase() !== teamObj.sport.toLowerCase())
       throw "teams must play the same sport";
 
-    updateGameObj.opposingTeamId = updateObject.opposingTeamId;
+    updateGameObj["games.opposingTeamId"] = updateObject.opposingTeamId;
   }
 
   if (updateObject.gameDate) {
@@ -170,27 +167,27 @@ const updateGame = async (gameId, updateObject) => {
       )
     )
       throw "new gameDate is invalid";
-    updateGameObj.gameDate = updateObject.gameDate;
+    updateGameObj["games.gameDate"] = updateObject.gameDate;
   }
 
   if (updateObject.homeOrAway) {
     updateObject.homeOrAway = updateObject.homeOrAway.trim();
     if (
-      updateObject.homeOrAway !== "Home" ||
+      updateObject.homeOrAway !== "Home" &&
       updateObject.homeOrAway !== "Away"
     )
-      throw 'homeOrAway can only be the follow case sensitive values: "Home" or "Away"';
-      updateGameObj.homeOrAway = updateObject.homeOrAway;
-
+      throw "homeOrAway can only be the follow case sensitive values: Home or Away";
+    updateGameObj["games.homeOrAway"] = updateObject.homeOrAway;
   }
 
   if (updateObject.finalScore) {
     updateObject.finalScore = updateObject.finalScore.trim();
-    if (isInvalidFinalScore(finalScore))
+    if (isInvalidFinalScore(updateObject.finalScore))
       throw "finalScore must be a string of form score1-score2 where scoreX is non-negative and different.";
-    updateGameObj.finalScore = updateObject.finalScore;
-
+    updateGameObj["games.finalScore"] = updateObject.finalScore;
   }
+
+  const teamsCollection = await teams();
 
   if (updateObject.win !== undefined) {
     if (isInvalidBoolean(updateObject.win)) throw "win must be a boolean.";
@@ -206,17 +203,25 @@ const updateGame = async (gameId, updateObject) => {
       );
       if (!updateRecord) throw "Could not update winLossCount in team.";
     }
-    updateGameObj.win = updateObject.win;
+    updateGameObj["games.win"] = updateObject.win;
   }
 
-  let newGame = await teamsCollection.findOneAndUpdate(
-    { _id: ObjectId.createFromHexString(gameId) },
-    { $set: updateGameObj },
+  // broken need to update game not team
+  // let updatedTeam = await teamsCollection.findOneAndUpdate(
+  //   { "games._id": ObjectId.createFromHexString(gameId) },
+  //   { $set: updateGameObj },
+  //   { returnDocument: "after" }
+  // );
+
+  //maybe
+  const updatedTeam = await teamsCollection.findOneAndUpdate(
+    { "games._id": ObjectId.createFromHexString(gameId) },
+    {
+      $set: updateGameObj,
+    },
     { returnDocument: "after" }
   );
-  if (!newGame) throw "Could not update game.";
-
-  const updatedTeam = await getTeamById(teamObj._id.toString());
+  if (!updatedTeam) throw "Could not update game.";
   return updatedTeam;
 };
 
@@ -224,17 +229,15 @@ const removeGame = async (gameId) => {
   if (isInvalidObjectID(gameId))
     throw "teamId must be a string of least one non-space character and a valid object ID.";
 
-  const teamsCollection = await teams();
-  const team = await teamsCollection.findOne({
-    "games._id": ObjectId.createFromHexString(gameId),
-  });
-  if (!team) throw "Game not found.";
+  const game = await getGame(gameId);
+  const team = await getTeamByGameID(gameId);
 
+  const teamsCollection = await teams();
   const removeGame = await teamsCollection.updateOne(
     { _id: team._id },
     {
       $pull: { games: { _id: ObjectId.createFromHexString(gameId) } },
-      $set: { winLossCount: subFromRecord(team.winLossCount, team.games.win) },
+      $set: { winLossCount: subFromRecord(team.winLossCount, game.win) },
     }
   );
   if (!removeGame) throw "Error removing the game.";
@@ -242,4 +245,25 @@ const removeGame = async (gameId) => {
   return await getTeamById(team._id.toString());
 };
 
-export { createGame, getAllGames, getGame, updateGame, removeGame };
+const getTeamByGameID = async (gameId) => {
+  if (isInvalidObjectID(gameId))
+    throw "teamId must be a string of least one non-space character and a valid object ID.";
+
+  gameId = gameId.trim();
+
+  const teamsCollection = await teams();
+  const team = await teamsCollection.findOne({
+    "games._id": ObjectId.createFromHexString(gameId),
+  });
+  if (!team) throw "Game not found.";
+  return team;
+};
+
+export {
+  createGame,
+  getAllGames,
+  getGame,
+  updateGame,
+  removeGame,
+  getTeamByGameID,
+};
