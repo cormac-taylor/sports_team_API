@@ -69,9 +69,11 @@ router
     }
 
     let teamYearFounded;
+    let teamSport;
     try {
-      const { yearFounded } = await getTeamById(req.params.teamId);
+      const { yearFounded, sport } = await getTeamById(req.params.teamId);
       teamYearFounded = yearFounded;
+      teamSport = sport;
     } catch (e) {
       return res.status(404).json({ error: e });
     }
@@ -83,9 +85,13 @@ router
       if (req.params.teamId === teamData.opposingTeamId)
         throw "team cannot play itself.";
 
-      const { yearFounded: oppYearFounded } = await getTeamById(
+      const { yearFounded: oppYearFounded, sport: oppSport } = await getTeamById(
         teamData.opposingTeamId
       );
+
+      if (teamSport.toLowerCase() !== oppSport.toLowerCase()) {
+        throw "a game must be played between two teams of the same sport";
+      }    
 
       if (isInvalidDate(teamData.gameDate, teamYearFounded, oppYearFounded))
         throw "gameDate is an invalid date";
@@ -187,9 +193,10 @@ router
           throw `opposingTeamId: ${e}`;
         }
 
-        if (oppObj.sport.toLowerCase() !== teamObj.sport.toLowerCase())
-          throw "teams must play the same sport";
-
+        if (teamObj.sport.toLowerCase() !== oppObj.sport.toLowerCase()) {
+          throw "a game must be played between two teams of the same sport";
+        }
+      
         updateData.opposingTeamId = gameData.opposingTeamId;
       }
 

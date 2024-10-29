@@ -154,7 +154,7 @@ const updateGame = async (gameId, updateObject) => {
     if (oppObj.sport.toLowerCase() !== teamObj.sport.toLowerCase())
       throw "teams must play the same sport";
 
-    updateGameObj["games.opposingTeamId"] = updateObject.opposingTeamId;
+    updateGameObj.opposingTeamId = updateObject.opposingTeamId;
   }
 
   if (updateObject.gameDate) {
@@ -167,7 +167,7 @@ const updateGame = async (gameId, updateObject) => {
       )
     )
       throw "new gameDate is invalid";
-    updateGameObj["games.gameDate"] = updateObject.gameDate;
+    updateGameObj.gameDate = updateObject.gameDate;
   }
 
   if (updateObject.homeOrAway) {
@@ -177,14 +177,14 @@ const updateGame = async (gameId, updateObject) => {
       updateObject.homeOrAway !== "Away"
     )
       throw "homeOrAway can only be the follow case sensitive values: Home or Away";
-    updateGameObj["games.homeOrAway"] = updateObject.homeOrAway;
+    updateGameObj.homeOrAway = updateObject.homeOrAway;
   }
 
   if (updateObject.finalScore) {
     updateObject.finalScore = updateObject.finalScore.trim();
     if (isInvalidFinalScore(updateObject.finalScore))
       throw "finalScore must be a string of form score1-score2 where scoreX is non-negative and different.";
-    updateGameObj["games.finalScore"] = updateObject.finalScore;
+    updateGameObj.finalScore = updateObject.finalScore;
   }
 
   const teamsCollection = await teams();
@@ -203,23 +203,27 @@ const updateGame = async (gameId, updateObject) => {
       );
       if (!updateRecord) throw "Could not update winLossCount in team.";
     }
-    updateGameObj["games.win"] = updateObject.win;
+    updateGameObj.win = updateObject.win;
   }
 
-  // broken need to update game not team
-  // let updatedTeam = await teamsCollection.findOneAndUpdate(
-  //   { "games._id": ObjectId.createFromHexString(gameId) },
-  //   { $set: updateGameObj },
-  //   { returnDocument: "after" }
-  // );
-
-  //maybe
+  for(const k of Object.keys(updateGameObj)){
+    gameObj[k] = updateGameObj[k]
+  }
+  // credit to https://www.mongodb.com/community/forums/t/update-every-sub-document-in-sub-sub-array/209162
   const updatedTeam = await teamsCollection.findOneAndUpdate(
+    // get team with game in question
     { "games._id": ObjectId.createFromHexString(gameId) },
     {
-      $set: updateGameObj,
+      // set all games matching filter to update obj
+      $set: {
+        "games.$[x]": gameObj,
+      },
     },
-    { returnDocument: "after" }
+    {
+      // filter array for games which match the id
+      arrayFilters: [{ "x._id": ObjectId.createFromHexString(gameId) }],
+      returnDocument: "after",
+    }
   );
   if (!updatedTeam) throw "Could not update game.";
   return updatedTeam;
