@@ -47,7 +47,11 @@ router
       if (isInvalidString(teamData.sport)) throw "sport is an invalid string";
       teamData.sport = teamData.sport.trim();
 
-      if (isInvalidInteger(teamData.yearFounded))
+      if (
+        isInvalidInteger(teamData.yearFounded) ||
+        teamData.yearFounded < 1850 ||
+        teamData.yearFounded > new Date().getFullYear()
+      )
         throw "yearFounded is an invalid integer year";
 
       if (isInvalidString(teamData.city)) throw "city is an invalid string";
@@ -61,7 +65,10 @@ router
         throw "stadium is an invalid string";
       teamData.stadium = teamData.stadium.trim();
 
-      if (isInvalidInteger(teamData.championshipsWon))
+      if (
+        isInvalidInteger(teamData.championshipsWon) ||
+        teamData.championshipsWon < 0
+      )
         throw "championshipsWon should be a non-negative integer";
 
       if (isInvalidPlayersArr(teamData.players))
@@ -140,7 +147,11 @@ router
       if (isInvalidString(teamData.sport)) throw "sport is an invalid string";
       teamData.sport = teamData.sport.trim();
 
-      if (isInvalidInteger(teamData.yearFounded))
+      if (
+        isInvalidInteger(teamData.yearFounded) ||
+        teamData.yearFounded < 1850 ||
+        teamData.yearFounded > new Date().getFullYear()
+      )
         throw "yearFounded is an invalid integer year";
 
       if (isInvalidString(teamData.city)) throw "city is an invalid string";
@@ -154,7 +165,10 @@ router
         throw "stadium is an invalid string";
       teamData.stadium = teamData.stadium.trim();
 
-      if (isInvalidInteger(teamData.championshipsWon))
+      if (
+        isInvalidInteger(teamData.championshipsWon) ||
+        teamData.championshipsWon < 0
+      )
         throw "championshipsWon should be a non-negative integer";
 
       if (isInvalidPlayersArr(teamData.players))
