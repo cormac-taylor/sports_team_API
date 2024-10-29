@@ -1,15 +1,3 @@
-// router
-//   .route("/game/:gameId")
-//   .get(async (req, res) => {
-//     //code here for GET
-//   })
-//   .patch(async (req, res) => {
-//     //code for PATCH
-//   })
-//   .delete(async (req, res) => {
-//     //code here for DELETE
-//   });
-
 /*
  * Cormac Taylor
  * I pledge my honor that I have abided by the Stevens Honor System.
