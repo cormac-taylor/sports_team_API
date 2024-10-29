@@ -29,7 +29,7 @@ router
       });
       return res.json(teamListProj);
     } catch (e) {
-      return res.status(404).send(e);
+      return res.status(500).send(e);
     }
   })
   .post(async (req, res) => {
@@ -216,7 +216,10 @@ router
 
     try {
       const team = await removeTeam(req.params.teamId);
-      return res.json(team);
+      return res.json({
+        "_id" : req.params.teamId,
+        "deleted"  : (!team ? false : true),
+      });
     } catch (e) {
       return res.status(404).json(e);
     }
